@@ -43,7 +43,13 @@ src_files := \
 # This is necessary to guarantee that the FDLIBM functions are in
 # "IEEE spirit", i.e. to guarantee that the IEEE 754 core functions
 # are used.
-cflags := "-D_LIB_VERSION_TYPE=\"const enum _IEEE_\""
+cflags := "-D_IEEE_LIBM"
+
+# Disable GCC optimizations that interact badly with this crufty
+# library (see their own admission in 'readme'). Without this, we
+# fail StrictMath tests on x86.
+cflags += "-fno-strict-aliasing"
+cflags += "-ffloat-store"
 
 
 #
@@ -62,6 +68,7 @@ ifneq ($(filter $(TARGET_ARCH),arm x86),)
 endif
 
 LOCAL_MODULE := libfdlibm
+LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -82,7 +89,8 @@ ifeq ($(WITH_HOST_DALVIK),true)
         LOCAL_CFLAGS += "-D__LITTLE_ENDIAN"
     endif
 
-    LOCAL_MODULE := libfdlibm-host
+    LOCAL_MODULE := libfdlibm
+    LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
     include $(BUILD_HOST_STATIC_LIBRARY)
 
